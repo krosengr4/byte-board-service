@@ -2,12 +2,11 @@
 -- Target DBMS:           PostgreSQL
 -- Project name:          ByteBoard
 -- ----------------------------------------------------------------------
-
-DROP DATABASE IF EXISTS byteboard;
-
-CREATE DATABASE byteboard;
-
-\c byteboard;
+--
+-- Note: Run this script while connected to the byteboard_db database
+-- Command: psql -U kros -d byteboard_db -f database.sql
+-- Or: cat database.sql | docker exec -i byte-db psql -U kros -d byteboard_db
+-- ----------------------------------------------------------------------
 
 -- Drop tables if they exist
 DROP TABLE IF EXISTS comments CASCADE;
