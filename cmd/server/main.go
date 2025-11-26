@@ -12,12 +12,19 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	// Setup Zerologger
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+	log.Logger = zerolog.New(zerolog.ConsoleWriter{
+		Out:        os.Stderr,
+		TimeFormat: "2006-01-02 15:04:05",
+	}).
+		With().
+		Timestamp().
+		Logger()
 
 	log.Info().Msg("Starting Byte Board Backend Service!")
 
@@ -71,7 +78,11 @@ func setupRouter(h *handler.Handler) *mux.Router {
 	router := mux.NewRouter()
 
 	// API routes
-	// api := router.PathPrefix("/api").Subrouter()
+	api := router.PathPrefix("/api").Subrouter()
+
+	// Comments
+	api.HandleFunc("/comments", h.GetAllComments).Methods("GET")
+	api.HandleFunc("/post/{postId}/comments", h.GetCommentsOnPost).Methods("GET")
 
 	return router
 }
