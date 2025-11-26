@@ -2,6 +2,7 @@ package repository
 
 import (
 	"byte-board/internal/appconfig"
+	"byte-board/internal/model"
 	"database/sql"
 	"fmt"
 
@@ -34,3 +35,31 @@ func New(cfg *appconfig.Config) (*DB, error) {
 	log.Info().Msg("Database successfully connected!")
 	return &DB{DB: db}, nil
 }
+
+// #region Comments
+
+// GET api/comments - Get all comments in the db
+func (db *DB) GetAllComments() ([]model.Comment, error) {
+	query := "SELECT * FROM comments"
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query comments")
+	}
+	defer rows.Close()
+
+	var commentsList []model.Comment
+	for rows.Next() {
+		var comment model.Comment
+		err := rows.Scan(&comment.CommentId, &comment.UserId, &comment.PostId, &comment.Content, &comment.Author, &comment.DatePosted)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan comments: %w", err)
+		}
+
+		commentsList = append(commentsList, comment)
+	}
+
+	return commentsList, nil
+}
+
+// #endregion
