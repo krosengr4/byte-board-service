@@ -1,0 +1,38 @@
+package model
+
+import "time"
+
+type Comment struct {
+	CommentId  int       `json:"comment_id" db:"comment_id"`
+	UserId     int       `json:"user_id" db:"user_id"`
+	PostId     int       `json:"post_id" db:"post_id"`
+	Content    string    `json:"content" db:"content"`
+	Author     string    `json:"author" db:"author"`
+	DatePosted time.Time `json:"date_posted" db:"date_posted"`
+}
+
+type Post struct {
+	PostId     int       `json:"post_id" db:"post_id"`
+	UserId     int       `json:"user_id" db:"user_id"`
+	Title      string    `json:"title" db:"title"`
+	Content    string    `json:"content" db:"content"`
+	Author     string    `json:"author" db:"author"`
+	DatePosted time.Time `json:"date_posted" db:"date_posted"`
+}
+
+type Profile struct {
+	UserId         int       `json:"user_id" db:"user_id"`
+	FirstName      string    `json:"first_name" db:"first_name"`
+	LastName       string    `json:"last_name" db:"last_name"`
+	Email          string    `json:"email" db:"email"`
+	GithubLink     string    `json:"github_link" db:"github_link"`
+	City           string    `json:"city" db:"city"`
+	State          string    `json:"state" db:"state"`
+	DateRegistered time.Time `json:"date_registered" db:"date_registered"`
+}
+
+type User struct {
+	Id       int    `json:"user_id" db:"user_id"`
+	Username string `json:"username" db:"username"`
+	Role     string `json:"role" db:"role"`
+}
