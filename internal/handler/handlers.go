@@ -5,7 +5,9 @@ import (
 	"byte-board/internal/repository"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
@@ -53,10 +55,38 @@ func (h *Handler) GetAllComments(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting comments")
 		writeErrorResponse(w, http.StatusInternalServerError, "failed to get comments")
+		return
 	}
 
 	log.Info().Int("count", len(comments)).Msg("Successfully retrieved comments!")
 	writeJSONResponse(w, http.StatusOK, comments)
+}
+
+// Handler to get all of the comments on a post
+func (h *Handler) GetCommentsOnPost(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /post/{postId}/comments - Getting comments on post")
+
+	vars := mux.Vars(r)
+	idStr := vars["postId"]
+
+	// Convert the ID string into an int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("id", idStr).Msg("Invalid post ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid Post ID")
+		return
+	}
+
+	comments, err := h.db.GetCommentsByPost(id)
+	if err != nil {
+		log.Error().Err(err).Msg("GET /post/{postId}/comments - Getting all comments on a post")
+		writeErrorResponse(w, http.StatusInternalServerError, "failed to get comments on post")
+		return
+	}
+
+	log.Info().Int("count", len(comments)).Msg("Successfully retrieved comments on post")
+	writeJSONResponse(w, http.StatusOK, comments)
+
 }
 
 // #endregion
