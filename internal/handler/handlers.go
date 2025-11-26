@@ -42,3 +42,21 @@ func writeErrorResponse(w http.ResponseWriter, status int, message string) {
 	log.Warn().Int("status", status).Str("message", message).Msg("Writing error response")
 	writeJSONResponse(w, status, ErrorResponse{Error: message})
 }
+
+// #region Comments
+
+// Handler to get all comments
+func (h *Handler) GetAllComments(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /comments - Getting all comments")
+
+	comments, err := h.db.GetAllComments()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting comments")
+		writeErrorResponse(w, http.StatusInternalServerError, "failed to get comments")
+	}
+
+	log.Info().Int("count", len(comments)).Msg("Successfully retrieved comments!")
+	writeJSONResponse(w, http.StatusOK, comments)
+}
+
+// #endregion
