@@ -62,6 +62,38 @@ func (h *Handler) GetAllComments(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, comments)
 }
 
+// Handler to get a comment by comment ID
+func (h *Handler) GetCommentById(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /comments/{CommentID} - Getting comment by its ID")
+
+	vars := mux.Vars(r)
+	idStr := vars["commentId"]
+
+	log.Info().Str("comment_id", idStr).Msg("GET /comments/{CommentID} - Getting comment by ID")
+
+	// Convert id string into an int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("id", idStr).Msg("Invalid commend ID format")
+	}
+
+	// Get comment by id from the database
+	comment, err := h.db.GetCommentById(id)
+	if err != nil {
+		if err.Error() == "comment not found" {
+			log.Warn().Int("ID", id).Msg("Comment with that ID not found")
+			writeErrorResponse(w, http.StatusInternalServerError, "Comment not found")
+			return
+		}
+		log.Error().Err(err).Msg("Failed to get comment by ID")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get that comment")
+		return
+	}
+
+	log.Info().Int("ID", id).Msg("Successfully retrieved the comment")
+	writeJSONResponse(w, http.StatusOK, comment)
+}
+
 // Handler to get all of the comments on a post
 func (h *Handler) GetCommentsOnPost(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /post/{postId}/comments - Getting comments on post")
