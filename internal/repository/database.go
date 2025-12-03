@@ -63,6 +63,22 @@ func (db *DB) GetAllComments() ([]model.Comment, error) {
 	return commentsList, nil
 }
 
+// GET api/comment/{commentId} - Get comment by ID
+func (db *DB) GetCommentById(commentId int) (*model.Comment, error) {
+	query := "SELECT * FROM comments WHERE comment_id = $1"
+
+	var comment model.Comment
+	err := db.QueryRow(query, commentId).Scan(&comment.CommentId, &comment.UserId, &comment.PostId, &comment.Content, &comment.Author, &comment.DatePosted)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("comment not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to query comments: %w", err)
+	}
+
+	return &comment, nil
+}
+
 // GET api/post/{postId}/comments - Get all comments on a post
 func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 	query := "SELECT * FROM comments WHERE post_id = $1"
