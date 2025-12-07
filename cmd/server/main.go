@@ -83,6 +83,7 @@ func setupRouter(h *handler.Handler) *mux.Router {
 	// Comments
 	api.HandleFunc("/comments", h.GetAllComments).Methods("GET")
 	api.HandleFunc("/post/{postId}/comments", h.GetCommentsOnPost).Methods("GET")
+	api.HandleFunc("/comments/{commentId}", h.GetCommentById).Methods("GET")
 
 	return router
 }
