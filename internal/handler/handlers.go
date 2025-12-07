@@ -140,4 +140,30 @@ func (h *Handler) GetAllPosts(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, posts)
 }
 
+// Handler to get post by ID
+func (h *Handler) GetPostById(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /posts/{postId} - Getting a post by post ID")
+
+	vars := mux.Vars(r)
+	idStr := vars["postId"]
+
+	// Convert the ID from string to an int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("ID", idStr).Msg("Invalid post ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	post, err := h.db.GetPostById(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get post by ID")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get post by ID")
+		return
+	}
+
+	log.Info().Int("Post ID", id).Msg("Successfully retrieved post by ID")
+	writeJSONResponse(w, http.StatusOK, post)
+}
+
 // #endregion
