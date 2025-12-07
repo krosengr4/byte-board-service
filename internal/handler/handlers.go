@@ -45,7 +45,7 @@ func writeErrorResponse(w http.ResponseWriter, status int, message string) {
 	writeJSONResponse(w, status, ErrorResponse{Error: message})
 }
 
-// #region Comments
+// #region Comment handlers
 
 // Handler to get all comments
 func (h *Handler) GetAllComments(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +111,7 @@ func (h *Handler) GetCommentsOnPost(w http.ResponseWriter, r *http.Request) {
 
 	comments, err := h.db.GetCommentsByPost(id)
 	if err != nil {
-		log.Error().Err(err).Msg("GET /post/{postId}/comments - Getting all comments on a post")
+		log.Error().Err(err).Msg("Failed to get all comments on the post")
 		writeErrorResponse(w, http.StatusInternalServerError, "failed to get comments on post")
 		return
 	}
@@ -119,6 +119,25 @@ func (h *Handler) GetCommentsOnPost(w http.ResponseWriter, r *http.Request) {
 	log.Info().Int("count", len(comments)).Msg("Successfully retrieved comments on post")
 	writeJSONResponse(w, http.StatusOK, comments)
 
+}
+
+// #endregion
+
+// #region Post handlers
+
+// Handler to get all posts
+func (h *Handler) GetAllPosts(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /posts - Getting all posts")
+
+	posts, err := h.db.GetAllPosts()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting all posts")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get all posts")
+		return
+	}
+
+	log.Info().Int("count", len(posts)).Msg("Successfully retrieved all posts")
+	writeJSONResponse(w, http.StatusOK, posts)
 }
 
 // #endregion
