@@ -177,13 +177,44 @@ func (db *DB) GetPostsByUserId(userId int) ([]model.Post, error) {
 }
 
 // #endregion
+
+// #region Profiles
+
+// GET api/profiles - Get all profiles
+func (db *DB) GetAllProfiles() ([]model.Profile, error) {
+	query := "SELECT * FROM profiles"
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query profiles: %w", err)
+	}
+
+	var profileList []model.Profile
+	for rows.Next() {
+		var profile model.Profile
+		err := rows.Scan(&profile.UserId, &profile.FirstName, &profile.LastName, &profile.Email, &profile.GithubLink, &profile.City, &profile.State, &profile.DateRegistered)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan profiles: %w", err)
+		}
+
+		profileList = append(profileList, profile)
+	}
+
+	return profileList, nil
+}
+
+// GET api/profile/{profileId} - Get a profile by profile ID
+
+// GET api/user/profile/{profileId} - Get profile by User ID
+
+// #endregion
+
 /*
 	todo:
 		- Add comment
 		- Edit comment
 		- Delete comment
 
-		- Get posts by user ID
 		- Add post
 		- Update post
 		- Delete post
