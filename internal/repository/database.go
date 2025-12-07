@@ -203,23 +203,21 @@ func (db *DB) GetAllProfiles() ([]model.Profile, error) {
 	return profileList, nil
 }
 
-// GET api/profile/{profileId} - Get a profile by profile ID
-func (db *DB) GetProfileById(profileId int) (*model.Profile, error) {
-	query := "SELECT * FROM profiles WHERE profile_id = $1"
+// GET api/user/profile/{profileId} - Get profile by User ID
+func (db *DB) GetProfileByUserId(userId int) (*model.Profile, error) {
+	query := "SELECT * FROM profiles WHERE user_id = $1"
 
 	var profile model.Profile
-	err := db.QueryRow(query, profileId).Scan(&profile.UserId, &profile.FirstName, &profile.LastName, &profile.Email, &profile.GithubLink, &profile.City, &profile.State, &profile.DateRegistered)
+	err := db.QueryRow(query, userId).Scan(&profile.UserId, &profile.FirstName, &profile.LastName, &profile.Email, &profile.GithubLink, &profile.City, &profile.State, &profile.DateRegistered)
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("profile not found")
+		return nil, fmt.Errorf("profile with that id not found")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to query and scan profiles: %w", err)
+		return nil, fmt.Errorf("failed to query profiles: %w", err)
 	}
 
-	return &profile, nil
+	return &profile, err
 }
-
-// GET api/user/profile/{profileId} - Get profile by User ID
 
 // #endregion
 
