@@ -193,3 +193,26 @@ func (h *Handler) GetPostsByUserId(w http.ResponseWriter, r *http.Request) {
 }
 
 // #endregion
+
+// #region Profile handlers
+
+// Handler to get all profiles
+func (h *Handler) GetAllProfiles(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /profiles - Getting all profiles")
+
+	profiles, err := h.db.GetAllProfiles()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get all profiles")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get profiles")
+		return
+	}
+
+	log.Info().Int("Count", len(profiles)).Msg("Successfully retrieved all profiles")
+	writeJSONResponse(w, http.StatusOK, profiles)
+}
+
+// Handler to get profile by profile ID
+
+// Handler to get profile by User ID
+
+// #endregion
