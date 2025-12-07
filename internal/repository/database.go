@@ -163,9 +163,6 @@ func (db *DB) GetPostsByUserId(userId int) ([]model.Post, error) {
 	for rows.Next() {
 		var post model.Post
 		err := rows.Scan(&post.PostId, &post.UserId, &post.Title, &post.Content, &post.Author, &post.DatePosted)
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("users posts not found")
-		}
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan rows: %w", err)
 		}
