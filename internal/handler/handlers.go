@@ -211,8 +211,35 @@ func (h *Handler) GetAllProfiles(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, profiles)
 }
 
-// Handler to get profile by profile ID
-
 // Handler to get profile by User ID
+func (h *Handler) GetProfileByUserId(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /profiles/{userId} - Getting profile by user ID")
+
+	// Get userID
+	vars := mux.Vars(r)
+	idStr := vars["userId"]
+
+	// Convert string user ID to an int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("User ID", idStr).Msg("Invalid user ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	profile, err := h.db.GetProfileByUserId(id)
+	if err != nil {
+		if err.Error() == "profile not found" {
+			log.Warn().Int("ID", id).Msg("Profile not found")
+			writeErrorResponse(w, http.StatusInternalServerError, "Profile not found")
+			return
+		}
+		log.Error().Err(err).Msg("Error getting profile")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get profile")
+	}
+
+	log.Info().Int("ID", id).Msg("Successfully retrieved profile")
+	writeJSONResponse(w, http.StatusOK, profile)
+}
 
 // #endregion
