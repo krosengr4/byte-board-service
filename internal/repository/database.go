@@ -105,6 +105,32 @@ func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 
 // #endregion
 
+// #region Posts
+
+// GET api/posts - Get all posts in the DB
+func (db *DB) GetAllPosts() ([]model.Post, error) {
+	query := "SELECT * FROM posts"
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query rows: %w", err)
+	}
+	defer rows.Close()
+
+	var postList []model.Post
+	for rows.Next() {
+		var post model.Post
+		err := rows.Scan(&post.PostId, &post.UserId, &post.Title, &post.Content, &post.Content, &post.Author, &post.DatePosted)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan rows: %w", err)
+		}
+
+		postList = append(postList, post)
+	}
+
+	return postList, nil
+}
+
 /*
 	todo:
 		- Add comment
