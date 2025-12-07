@@ -90,5 +90,8 @@ func setupRouter(h *handler.Handler) *mux.Router {
 	api.HandleFunc("/posts/{postId}", h.GetPostById).Methods("GET")
 	api.HandleFunc("/posts/user/{userId}", h.GetPostsByUserId).Methods("GET")
 
+	// Profiles
+	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
+
 	return router
 }
