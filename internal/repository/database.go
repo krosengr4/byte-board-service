@@ -100,6 +100,9 @@ func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 		commentList = append(commentList, comment)
 	}
 
+	if len(commentList) == 0 {
+		return nil, fmt.Errorf("no comments were found")
+	}
 	return commentList, nil
 }
 
@@ -170,6 +173,9 @@ func (db *DB) GetPostsByUserId(userId int) ([]model.Post, error) {
 		postList = append(postList, post)
 	}
 
+	if len(postList) == 0 {
+		return nil, fmt.Errorf("users posts not found")
+	}
 	return postList, nil
 }
 
