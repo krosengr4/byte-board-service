@@ -203,14 +203,14 @@ func (db *DB) GetAllProfiles() ([]model.Profile, error) {
 	return profileList, nil
 }
 
-// GET api/user/profile/{profileId} - Get profile by User ID
+// GET api/profiles/{userId} - Get profile by User ID
 func (db *DB) GetProfileByUserId(userId int) (*model.Profile, error) {
 	query := "SELECT * FROM profiles WHERE user_id = $1"
 
 	var profile model.Profile
 	err := db.QueryRow(query, userId).Scan(&profile.UserId, &profile.FirstName, &profile.LastName, &profile.Email, &profile.GithubLink, &profile.City, &profile.State, &profile.DateRegistered)
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("profile with that id not found")
+		return nil, fmt.Errorf("profile not found")
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to query profiles: %w", err)
