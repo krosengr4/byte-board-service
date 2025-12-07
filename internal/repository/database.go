@@ -120,7 +120,7 @@ func (db *DB) GetAllPosts() ([]model.Post, error) {
 	var postList []model.Post
 	for rows.Next() {
 		var post model.Post
-		err := rows.Scan(&post.PostId, &post.UserId, &post.Title, &post.Content, &post.Content, &post.Author, &post.DatePosted)
+		err := rows.Scan(&post.PostId, &post.UserId, &post.Title, &post.Content, &post.Author, &post.DatePosted)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan rows: %w", err)
 		}
@@ -131,13 +131,29 @@ func (db *DB) GetAllPosts() ([]model.Post, error) {
 	return postList, nil
 }
 
+// GET api/posts/{postId} - Getting post by post ID
+func (db *DB) GetPostById(postId int) (*model.Post, error) {
+	query := "SELECT * FROM posts WHERE post_id = $1"
+
+	var post model.Post
+	err := db.QueryRow(query, postId).Scan(&post.PostId, &post.UserId, &post.Title, &post.Content, &post.Author, &post.DatePosted)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("post not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to query post with that id: %w", err)
+	}
+
+	return &post, nil
+}
+
+// #endregion
 /*
 	todo:
 		- Add comment
 		- Edit comment
 		- Delete comment
 
-		- Get all posts
 		- Get post by ID
 		- Get posts by user ID
 		- Add post
