@@ -104,3 +104,29 @@ func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 }
 
 // #endregion
+
+/*
+	todo:
+		- Add comment
+		- Edit comment
+		- Delete comment
+
+		- Get all posts
+		- Get post by ID
+		- Get posts by user ID
+		- Add post
+		- Update post
+		- Delete post
+
+		- Get profile by User ID
+		- Create profile
+		- Update profile
+		- Delete profile
+
+		- Get all users
+		- Get user by ID
+		- Get user by username
+		- Get userID by username
+		- Create user
+		- Check if user exists
+*/
