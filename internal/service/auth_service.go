@@ -115,6 +115,9 @@ func (s *AuthService) ChangePassword(userId int, oldPass, newPass string) error 
 }
 
 // Checks if JWT token is valid
+func (s *AuthService) ValidateToken(tokenString string) error {
+	return s.tokenProvider.ValidateToken(tokenString)
+}
 
 // Extracts user information from a JWT token
 func (s *AuthService) GetUserFromToken(tokenString string) (*model.User, error) {
