@@ -1,0 +1,82 @@
+package service
+
+import (
+	"byte-board/internal/auth"
+	"byte-board/internal/model"
+	"byte-board/internal/repository"
+	"fmt"
+)
+
+// Handles authentication business logic
+type AuthService struct {
+	db            *repository.DB
+	tokenProvider *auth.TokenProvider
+}
+
+// Creates new authentication service
+func NewAuthService(db *repository.DB, tokenProvider *auth.TokenProvider) *AuthService {
+	return &AuthService{
+		db:            db,
+		tokenProvider: tokenProvider,
+	}
+}
+
+// Login - Authenticate user and return JWT token
+func (s *AuthService) Login(username, password string) (string, error) {
+	// Get user from database
+	user, err := s.db.GetUserByUsername(username)
+	if err != nil {
+		return "", fmt.Errorf("invalid credentials")
+	}
+
+	// Verify password
+	if !auth.CheckPassword(password, user.HashedPassword) {
+		return "", fmt.Errorf("invalid credentials")
+	}
+
+	// Generate JWT token
+	token, err := s.tokenProvider.CreateToken(user.Username, user.Role)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	return token, nil
+}
+
+// Creates new account
+func (s *AuthService) Register(username, password string) (*model.User, error) {
+	// Validate password strength
+	if err := auth.ValidatePasswordStrength(password); err != nil {
+		return nil, fmt.Errorf("invalid password: %w", err)
+	}
+
+	// Check if username already exists
+	exists, err := s.db.UserExists(username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check username availability: %w", err)
+	}
+	if exists {
+		return nil, fmt.Errorf("username already exists")
+	}
+
+	// Hash password
+	hashedPassword, err := auth.HashPassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Create user object
+	user := &model.User{
+		Username:       username,
+		HashedPassword: hashedPassword,
+		Role:           "user",
+	}
+
+	// Save to database
+	if err := s.db.CreateUser(user); err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// user.ID is now populated by CreateUser bc of RETURNING clause
+	return user, nil
+}
