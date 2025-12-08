@@ -34,6 +34,6 @@ type Profile struct {
 type User struct {
 	ID             int    `json:"user_id" db:"user_id"`
 	Username       string `json:"username" db:"username"`
-	HashedPassword string `json:"hashed_password" db:"hashed_password"`
+	HashedPassword string `json:"-" db:"hashed_password"`
 	Role           string `json:"role" db:"role"`
 }
