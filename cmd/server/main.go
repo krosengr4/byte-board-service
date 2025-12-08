@@ -80,19 +80,38 @@ func setupRouter(h *handler.Handler) *mux.Router {
 	// API routes
 	api := router.PathPrefix("/api").Subrouter()
 
-	// Comments
+	// #region Comments
+
+	// GET
 	api.HandleFunc("/comments", h.GetAllComments).Methods("GET")
 	api.HandleFunc("/post/{postId}/comments", h.GetCommentsOnPost).Methods("GET")
 	api.HandleFunc("/comments/{commentId}", h.GetCommentById).Methods("GET")
 
-	// Posts
+	// #endregion
+
+	// #region Posts
+
+	// GET
 	api.HandleFunc("/posts", h.GetAllPosts).Methods("GET")
 	api.HandleFunc("/posts/{postId}", h.GetPostById).Methods("GET")
 	api.HandleFunc("/posts/user/{userId}", h.GetPostsByUserId).Methods("GET")
 
-	// Profiles
+	// #endregion
+
+	// #region Profiles
+
+	// GET
 	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
 	api.HandleFunc("/profiles/{userId}", h.GetProfileByUserId).Methods("GET")
+
+	// #endregion
+
+	// #region Users
+
+	// GET
+	api.HandleFunc("/users", h.GetAllUsers).Methods("GET")
+
+	// #endregion
 
 	return router
 }
