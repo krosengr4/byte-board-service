@@ -221,6 +221,33 @@ func (db *DB) GetProfileByUserId(userId int) (*model.Profile, error) {
 
 // #endregion
 
+// #region Users
+
+// GET api/users - Get all users
+func (db *DB) GetAllUsers() ([]model.User, error) {
+	query := "SELECT * FROM users"
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query users")
+	}
+
+	var userList []model.User
+	for rows.Next() {
+		var user model.User
+		rows.Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan users")
+		}
+
+		userList = append(userList, user)
+	}
+
+	return userList, nil
+}
+
+// #endregion
+
 /*
 	todo:
 		- Add comment
