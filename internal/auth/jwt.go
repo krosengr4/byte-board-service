@@ -1,18 +1,12 @@
 package auth
 
 import (
+	"byte-board/internal/model"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-)
-
-var (
-	ErrInvalidToken     = errors.New("invalid token")
-	ErrExpiredToken     = errors.New("token has expired")
-	ErrInvalidSignature = errors.New("invalid token signature")
-	ErrMissingClaims    = errors.New("missing required claims")
 )
 
 // JWT claims structure
@@ -84,17 +78,17 @@ func (tp *TokenProvider) ValidateToken(tokenString string) error {
 	if err != nil {
 		// Check for specific JWT errors
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return ErrExpiredToken
+			return model.ErrExpiredToken
 		}
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
 			return jwt.ErrSignatureInvalid
 		}
-		return fmt.Errorf("%w, %v", ErrInvalidToken, err)
+		return fmt.Errorf("%w, %v", model.ErrInvalidToken, err)
 	}
 
 	// Verify that the token is valid
 	if !token.Valid {
-		return ErrInvalidToken
+		return model.ErrInvalidToken
 	}
 
 	return nil
@@ -117,12 +111,12 @@ func (tp *TokenProvider) ParseToken(tokenString string) (*Claims, error) {
 	// Extract Claims
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
-		return nil, ErrInvalidToken
+		return nil, model.ErrInvalidToken
 	}
 
 	// Varify required claims exists
 	if claims.Username == "" {
-		return nil, ErrMissingClaims
+		return nil, model.ErrMissingClaims
 	}
 
 	return claims, nil
