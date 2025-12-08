@@ -262,7 +262,7 @@ func (db *DB) GetUserByID(userId int) (*model.User, error) {
 	return &user, nil
 }
 
-// GET api/users/{username} - Get user by username
+// GET api/users/username/{username} - Get user by username
 func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 	query := "SELECT * FROM users WHERE username = $1"
 

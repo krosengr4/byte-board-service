@@ -262,7 +262,7 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handler to get User by User ID
-func(h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /users/{userId} - Getting user by user ID")
 
 	// Get ID
@@ -293,5 +293,28 @@ func(h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, user)
 }
 
+// Handler to get User by Username
+func (h *Handler) GetUserByUsername(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /users/username/{username} - Getting user by username")
+
+	// Get username
+	vars := mux.Vars(r)
+	username := vars["username"]
+
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		if err.Error() == "username not found" {
+			log.Warn().Str("username", username).Msg("No user with that username found")
+			writeErrorResponse(w, http.StatusInternalServerError, "Username not found")
+			return
+		}
+		log.Error().Err(err).Msg("Failed to get user with that username")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user")
+		return
+	}
+
+	log.Info().Str("Username", username).Msg("Successfully retrieved user")
+	writeJSONResponse(w, http.StatusOK, user)
+}
+
 // #endregion
-	
