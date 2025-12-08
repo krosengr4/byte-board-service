@@ -260,3 +260,38 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("Successfully retrieved all users")
 	writeJSONResponse(w, http.StatusOK, users)
 }
+
+// Handler to get User by User ID
+func(h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /users/{userId} - Getting user by user ID")
+
+	// Get ID
+	vars := mux.Vars(r)
+	idStr := vars["userId"]
+
+	// Convert int UserID to a string
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("ID", idStr).Msg("Invalid user ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	user, err := h.db.GetUserByID(id)
+	if err != nil {
+		if err.Error() == "user not found" {
+			log.Warn().Int("ID", id).Msg("No user with that ID found")
+			writeErrorResponse(w, http.StatusInternalServerError, "User not found")
+			return
+		}
+		log.Error().Err(err).Msg("Failed to get user with that ID")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user")
+		return
+	}
+
+	log.Info().Int("ID", id).Msg("Successfully retrieved user")
+	writeJSONResponse(w, http.StatusOK, user)
+}
+
+// #endregion
+	
