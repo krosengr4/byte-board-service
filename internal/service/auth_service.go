@@ -113,3 +113,22 @@ func (s *AuthService) ChangePassword(userId int, oldPass, newPass string) error 
 
 	return nil
 }
+
+// Checks if JWT token is valid
+
+// Extracts user information from a JWT token
+func (s *AuthService) GetUserFromToken(tokenString string) (*model.User, error) {
+	// Parse token
+	claims, err := s.tokenProvider.ParseToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get user from database
+	user, err := s.db.GetUserByUsername(claims.Username)
+	if err != nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return user, nil
+}
