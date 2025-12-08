@@ -77,7 +77,9 @@ func (h *Handler) GetCommentById(w http.ResponseWriter, r *http.Request) {
 	// Convert id string into an int
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		log.Warn().Str("id", idStr).Msg("Invalid commend ID format")
+		log.Warn().Str("id", idStr).Msg("Invalid ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid ID format")
+		return
 	}
 
 	// Get comment by id from the database
@@ -85,7 +87,7 @@ func (h *Handler) GetCommentById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "comment not found" {
 			log.Warn().Int("ID", id).Msg("Comment with that ID not found")
-			writeErrorResponse(w, http.StatusInternalServerError, "Comment not found")
+			writeErrorResponse(w, http.StatusNotFound, "Comment not found")
 			return
 		}
 		log.Error().Err(err).Msg("Failed to get comment by ID")
@@ -234,11 +236,12 @@ func (h *Handler) GetProfileByUserId(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "profile not found" {
 			log.Warn().Int("ID", id).Msg("Profile not found")
-			writeErrorResponse(w, http.StatusInternalServerError, "Profile not found")
+			writeErrorResponse(w, http.StatusNotFound, "Profile not found")
 			return
 		}
 		log.Error().Err(err).Msg("Error getting profile")
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get profile")
+		return
 	}
 
 	log.Info().Int("ID", id).Msg("Successfully retrieved profile")
@@ -284,7 +287,7 @@ func (h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "user not found" {
 			log.Warn().Int("ID", id).Msg("No user with that ID found")
-			writeErrorResponse(w, http.StatusInternalServerError, "User not found")
+			writeErrorResponse(w, http.StatusNotFound, "User not found")
 			return
 		}
 		log.Error().Err(err).Msg("Failed to get user with that ID")
@@ -308,7 +311,7 @@ func (h *Handler) GetUserByUsername(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "username not found" {
 			log.Warn().Str("username", username).Msg("No user with that username found")
-			writeErrorResponse(w, http.StatusInternalServerError, "Username not found")
+			writeErrorResponse(w, http.StatusNotFound, "Username not found")
 			return
 		}
 		log.Error().Err(err).Msg("Failed to get user with that username")
