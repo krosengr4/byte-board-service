@@ -80,3 +80,36 @@ func (s *AuthService) Register(username, password string) (*model.User, error) {
 	// user.ID is now populated by CreateUser bc of RETURNING clause
 	return user, nil
 }
+
+// Change a user's password
+func (s *AuthService) ChangePassword(userId int, oldPass, newPass string) error {
+	// Get user
+	user, err := s.db.GetUserByID(userId)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+
+	// Verify old password
+	if !auth.CheckPassword(oldPass, user.HashedPassword) {
+		return fmt.Errorf("invalid current password")
+	}
+
+	// Validate new password
+	if err := auth.ValidatePasswordStrength(newPass); err != nil {
+		return err
+	}
+
+	// Hash new password
+	hashedPass, err := auth.HashPassword(newPass)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Update user
+	user.HashedPassword = hashedPass
+	if err := s.db.UpdateUser(user); err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	return nil
+}
