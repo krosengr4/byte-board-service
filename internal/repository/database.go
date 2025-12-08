@@ -235,7 +235,7 @@ func (db *DB) GetAllUsers() ([]model.User, error) {
 	var userList []model.User
 	for rows.Next() {
 		var user model.User
-		rows.Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
+		err := rows.Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan users")
 		}

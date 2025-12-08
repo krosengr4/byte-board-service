@@ -243,3 +243,20 @@ func (h *Handler) GetProfileByUserId(w http.ResponseWriter, r *http.Request) {
 }
 
 // #endregion
+
+// #region Handler for Users
+
+// Handler to get all Users
+func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /users - Getting all users")
+
+	users, err := h.db.GetAllUsers()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get all users")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get all users")
+		return
+	}
+
+	log.Info().Msg("Successfully retrieved all users")
+	writeJSONResponse(w, http.StatusOK, users)
+}
