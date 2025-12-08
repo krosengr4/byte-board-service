@@ -117,9 +117,12 @@ func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) 
 	api.HandleFunc("/comments/{commentId}", h.GetCommentById).Methods("GET")
 
 	// Post endpoints
+	// GET
 	api.HandleFunc("/posts", h.GetAllPosts).Methods("GET")
 	api.HandleFunc("/posts/{postId}", h.GetPostById).Methods("GET")
 	api.HandleFunc("/posts/user/{userId}", h.GetPostsByUserId).Methods("GET")
+	// POST
+	protected.HandleFunc("/posts", h.CreatePost).Methods("POST")
 
 	// Profile endpoints
 	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
