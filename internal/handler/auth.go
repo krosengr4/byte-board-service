@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"byte-board/internal/middleware"
 	"byte-board/internal/model"
 	"encoding/json"
 	"net/http"
@@ -47,7 +48,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create reponse
+	// Create response
 	response := map[string]interface{}{
 		"message": "User successfully registered",
 		"user": model.UserSummary{
@@ -63,7 +64,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		Int("user_id", user.ID).
 		Msg("User registered successfully")
 
-	writeJSONResponse(w, http.StatusOK, response)
+	writeJSONResponse(w, http.StatusCreated, response)
 }
 
 // POST /api/login - Login handler
@@ -88,8 +89,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	// Authenticate user and get JWT token
 	token, err := h.authService.Login(req.Username, req.Password)
 	if err != nil {
-		// Don't reveal wether user or pass was wrong
-		log.Warn().Str("Username", req.Username).Err(err).Msg("Login failed")
+		// Don't reveal whether user or pass was wrong
+		log.Warn().Str("username", req.Username).Err(err).Msg("Login failed")
 		writeErrorResponse(w, http.StatusUnauthorized, "Invalid username or password")
 		return
 	}
@@ -112,8 +113,47 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	log.Info().Str("Username", user.Username).Int("User ID", user.ID).Msg("User logged in succesfully")
+	log.Info().Str("username", user.Username).Int("user_id", user.ID).Msg("User logged in successfully")
 	writeJSONResponse(w, http.StatusOK, response)
 }
 
 // GET /api/auth/me - GET current user handler
+func (h *Handler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("GET /api/auth/me - Getting current user")
+
+	// Get username from JWT middleware context
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	// Get user from database
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get current user")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get current user")
+		return
+	}
+
+	// Get user profile from database
+	profile, err := h.db.GetProfileByUserId(user.ID)
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to get user profile")
+		// Continue without profile
+	}
+
+	// Create response
+	response := map[string]interface{}{
+		"user": model.UserSummary{
+			UserID:   user.ID,
+			Username: user.Username,
+			Role:     user.Role,
+		},
+		"profile": profile,
+	}
+
+	log.Info().Str("username", username).Msg("Successfully retrieved current user")
+	writeJSONResponse(w, http.StatusOK, response)
+}
