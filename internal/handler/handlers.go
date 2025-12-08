@@ -3,6 +3,7 @@ package handler
 import (
 	"byte-board/internal/appconfig"
 	"byte-board/internal/repository"
+	"byte-board/internal/service"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -12,8 +13,9 @@ import (
 )
 
 type Handler struct {
-	db     *repository.DB
-	config *appconfig.Config
+	db          *repository.DB
+	config      *appconfig.Config
+	authService *service.AuthService
 }
 
 // Create a new instance of a handler
