@@ -294,6 +294,54 @@ func (db *DB) CreateUser(user *model.User) error {
 	return nil
 }
 
+// Update user
+func (db *DB) UpdateUser(user *model.User) error {
+	query := `
+		UPDATE users
+		SET username = $1,
+		hashed_password = $2,
+		role = $3
+		WHERE user_id = $4
+	`
+
+	result, err := db.Exec(query, user.Username, user.HashedPassword, user.Role, user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("user not found")
+	}
+
+	return nil
+}
+
+// Delete user
+func (db *DB) DeleteUser(userId int) error {
+	query := "DELETE FROM users WHERE user_id = $1"
+
+	result, err := db.Exec(query, userId)
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("user not found")
+	}
+
+	return nil
+}
+
+// Check if username already exists
+
 // #endregion
 
 /*
