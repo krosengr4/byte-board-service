@@ -24,7 +24,11 @@ type Config struct {
 	// PostgresPassword string `env:"POSTGRES_PASSWORD_FILE"`
 	PostgresSSLMode string `env:"POSTGRES_SSL_MODE"`
 
-	// FrontendURL string `env:"FRONTEND_URL"`
+	FrontendURL string `env:"FRONTEND_URL"`
+
+	// JWT Configuration
+	JWTSecret          string `env:"JWT_SECRET,required"`
+	JWTExpirationHours int    `env:"JWT_EXPIRATION_HOURS" envDefault:"30"`
 
 	// Allowed Origins
 	AllowedOrigins string `env:"ALLOWED_ORIGINS"`
