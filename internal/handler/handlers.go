@@ -19,10 +19,11 @@ type Handler struct {
 }
 
 // Create a new instance of a handler
-func New(db *repository.DB, cfg *appconfig.Config) *Handler {
+func New(db *repository.DB, cfg *appconfig.Config, authService *service.AuthService) *Handler {
 	return &Handler{
-		db:     db,
-		config: cfg,
+		db:          db,
+		config:      cfg,
+		authService: authService,
 	}
 }
 
