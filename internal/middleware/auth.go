@@ -23,6 +23,13 @@ type AuthMiddleware struct {
 	TokenProvider *auth.TokenProvider
 }
 
+// Creates a new authentication middleware
+func NewAuthMiddleware(tokenProvider *auth.TokenProvider) *AuthMiddleware {
+	return &AuthMiddleware{
+		TokenProvider: tokenProvider,
+	}
+}
+
 // Middleware that validates JWT tokens and adds user info to context
 func (am *AuthMiddleware) JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
