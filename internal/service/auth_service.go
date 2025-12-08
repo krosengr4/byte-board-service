@@ -5,6 +5,7 @@ import (
 	"byte-board/internal/model"
 	"byte-board/internal/repository"
 	"fmt"
+	"time"
 )
 
 // Handles authentication business logic
@@ -44,25 +45,25 @@ func (s *AuthService) Login(username, password string) (string, error) {
 }
 
 // Creates new account
-func (s *AuthService) Register(username, password string) (*model.User, error) {
+func (s *AuthService) Register(username, password, firstName, lastName, email string) (*model.User, *model.Profile, error) {
 	// Validate password strength
 	if err := auth.ValidatePasswordStrength(password); err != nil {
-		return nil, fmt.Errorf("invalid password: %w", err)
+		return nil, nil, fmt.Errorf("invalid password: %w", err)
 	}
 
 	// Check if username already exists
 	exists, err := s.db.UserExists(username)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check username availability: %w", err)
+		return nil, nil, fmt.Errorf("failed to check username availability: %w", err)
 	}
 	if exists {
-		return nil, fmt.Errorf("username already exists")
+		return nil, nil, fmt.Errorf("username already exists")
 	}
 
 	// Hash password
 	hashedPassword, err := auth.HashPassword(password)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
+		return nil, nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	// Create user object
@@ -74,11 +75,29 @@ func (s *AuthService) Register(username, password string) (*model.User, error) {
 
 	// Save to database
 	if err := s.db.CreateUser(user); err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Create profile for user
+	profile := &model.Profile{
+		UserId:         user.ID,
+		FirstName:      firstName,
+		LastName:       lastName,
+		Email:          "",
+		GithubLink:     "",
+		City:           "",
+		State:          "",
+		DateRegistered: time.Now(),
+	}
+
+	// Add new profile to the database
+	createdProfile, err := s.db.CreateProfile(profile)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create profile: %w", err)
 	}
 
 	// user.ID is now populated by CreateUser bc of RETURNING clause
-	return user, nil
+	return user, createdProfile, nil
 }
 
 // Change a user's password

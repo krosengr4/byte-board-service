@@ -219,6 +219,29 @@ func (db *DB) GetProfileByUserId(userId int) (*model.Profile, error) {
 	return &profile, err
 }
 
+// Create a profile
+func (db *DB) CreateProfile(profile *model.Profile) (*model.Profile, error) {
+	query := `
+		INSERT INTO profiles (user_id, first_name, last_name, email, github_link, city, state, date_registered)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	`
+
+	_, err := db.Exec(query,
+		profile.UserId,
+		profile.FirstName,
+		profile.LastName,
+		profile.Email,
+		profile.GithubLink,
+		profile.City,
+		profile.State,
+		profile.DateRegistered)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create profile: %w", err)
+	}
+
+	return profile, nil
+}
+
 // #endregion
 
 // #region Users
