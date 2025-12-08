@@ -341,6 +341,17 @@ func (db *DB) DeleteUser(userId int) error {
 }
 
 // Check if username already exists
+func (db *DB) UserExists(username string) (bool, error) {
+	query := "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)"
+
+	var exists bool
+	err := db.QueryRow(query, username).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if user exists: %w", err)
+	}
+
+	return exists, nil
+}
 
 // #endregion
 
