@@ -176,7 +176,7 @@ func (db *DB) GetPostsByUserId(userId int) ([]model.Post, error) {
 	return postList, nil
 }
 
-// POST api/protected/posts - Create a post
+// POST api/posts - Create a post
 func (db *DB) CreatePost(post *model.Post) error {
 	query := `
 		INSERT INTO posts (user_id, title, content, author, date_posted) 
@@ -190,6 +190,34 @@ func (db *DB) CreatePost(post *model.Post) error {
 		return fmt.Errorf("failed to create post: %w", err)
 	}
 
+	return nil
+}
+
+// PUT api/posts/{postId} - Update a post
+func (db *DB) UpdatePost(post *model.Post) error {
+	query := `
+		UPDATE posts
+		SET user_id = $2, title = $3, content = $4, author = $5, date_posted = $6
+		WHERE post_id = $1
+	`
+
+	result, err := db.Exec(query, post.PostId, post.UserId, post.Title, post.Content, post.Author, post.DatePosted)
+	if err != nil {
+		return fmt.Errorf("failed to update post: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	log.Info().Int("post_id", post.PostId).Int64("rows affected", rowsAffected).Msg("Post update query executed")
+
+	if rowsAffected == 0 {
+		log.Warn().Int("post_id", post.PostId).Msg("No rows affected - post not found")
+	}
+
+	log.Info().Int("post_id", post.PostId).Msg("Successfully updated post in database")
 	return nil
 }
 
