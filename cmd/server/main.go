@@ -110,6 +110,7 @@ func setupRouter(h *handler.Handler) *mux.Router {
 
 	// GET
 	api.HandleFunc("/users", h.GetAllUsers).Methods("GET")
+	api.HandleFunc("/users/{userId}", h.GetUserById).Methods("GET")
 
 	// #endregion
 
