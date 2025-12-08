@@ -176,6 +176,23 @@ func (db *DB) GetPostsByUserId(userId int) ([]model.Post, error) {
 	return postList, nil
 }
 
+// POST api/protected/posts - Create a post
+func (db *DB) CreatePost(post *model.Post) error {
+	query := `
+		INSERT INTO posts (user_id, title, content, author, date_posted) 
+		VALUES ($1, $2, $3, $4, $5) 
+		RETURNING post_id
+	`
+
+	err := db.QueryRow(query, post.UserId, post.Title, post.Content, post.Author, post.DatePosted).
+		Scan(&post.PostId)
+	if err != nil {
+		return fmt.Errorf("failed to create post: %w", err)
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Profiles
