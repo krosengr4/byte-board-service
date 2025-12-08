@@ -246,6 +246,22 @@ func (db *DB) GetAllUsers() ([]model.User, error) {
 	return userList, nil
 }
 
+// GET api/users/{userId} - Get user by user ID
+func (db *DB) GetUserByID(userId int) (*model.User, error) {
+	query := "SELECT * FROM users WHERE user_id = $1"
+
+	var user model.User
+	err := db.QueryRow(query, userId).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to query or scan rows: %w", err)
+	}
+
+	return &user, nil
+}
+
 // #endregion
 
 /*
