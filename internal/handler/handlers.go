@@ -200,7 +200,7 @@ func (h *Handler) GetPostsByUserId(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, posts)
 }
 
-// POST /api/protected/posts - Create new post
+// POST /api/posts - Create new post
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("POST /api/posts - Creating new post")
 
@@ -256,6 +256,92 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Str("title", post.Title).Msg("Post created successfully")
 	writeJSONResponse(w, http.StatusCreated, post)
+}
+
+// PUT /api/posts/{postId} - Update post
+func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("PUT /api/posts/{postId} - Updating a post")
+
+	// Get authenticated user from context
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in the context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	// Get the user from the db
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user")
+		writeErrorResponse(w, http.StatusInternalServerError, "failed to get user")
+		return
+	}
+
+	// Get post ID from URL params
+	vars := mux.Vars(r)
+	idStr := vars["postId"]
+
+	// Convert string ID into int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("post_id", idStr).Msg("Invalid post ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	// Get existing post from the db
+	existingPost, err := h.db.GetPostById(id)
+	if err != nil {
+		if err.Error() == "post not found" {
+			log.Warn().Int("postId", id).Msg("post not found")
+			writeErrorResponse(w, http.StatusNotFound, "Post not found")
+			return
+		}
+		log.Error().Err(err).Msg("failed to get post")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get post")
+		return
+	}
+
+	// Verify the user owns the post (holy cow... long function)
+	if existingPost.UserId != user.ID {
+		log.Warn().Int("userId", user.ID).Int("postId", existingPost.PostId).Msg("User does not own this post")
+		writeErrorResponse(w, http.StatusForbidden, "You can only update your own posts")
+		return
+	}
+
+	// Parse request body
+	var req struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Warn().Err(err).Msg("Invalid request body")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate input
+	if req.Title == "" || req.Content == "" {
+		log.Warn().Msg("Missing required fields")
+		writeErrorResponse(w, http.StatusBadRequest, "Title and content are required")
+		return
+	}
+
+	// Update post object with new data
+	existingPost.Title = req.Title
+	existingPost.Content = req.Content
+
+	// Call database to update post
+	if err := h.db.UpdatePost(existingPost); err != nil {
+		log.Error().Err(err).Msg("failed to update post")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to update post")
+		return
+	}
+
+	// Finally
+	log.Info().Int("postId", id).Str("title", existingPost.Title).Msg("Post updated successfully")
+	writeJSONResponse(w, http.StatusOK, existingPost)
 }
 
 // #endregion
