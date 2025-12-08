@@ -45,7 +45,7 @@ func (s *AuthService) Login(username, password string) (string, error) {
 }
 
 // Creates new account
-func (s *AuthService) Register(username, password, firstName, lastName, email string) (*model.User, *model.Profile, error) {
+func (s *AuthService) Register(username, password, firstName, lastName string) (*model.User, *model.Profile, error) {
 	// Validate password strength
 	if err := auth.ValidatePasswordStrength(password); err != nil {
 		return nil, nil, fmt.Errorf("invalid password: %w", err)
