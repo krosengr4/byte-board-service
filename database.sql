@@ -4,8 +4,8 @@
 -- ----------------------------------------------------------------------
 --
 -- Note: Run this script while connected to the byteboard_db database
--- Command: psql -U kros -d byteboard_db -f database.sql
--- Or: cat database.sql | docker exec -i byte-db psql -U kros -d byteboard_db
+-- Command: psql -U postgres -d byteboard_db -f database.sql
+-- Or: cat database.sql | docker exec -i byte-db psql -U postgres -d byteboard_db
 -- ----------------------------------------------------------------------
 
 -- Drop tables if they exist
