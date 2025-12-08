@@ -2,8 +2,10 @@ package main
 
 import (
 	"byte-board/internal/appconfig"
+	"byte-board/internal/auth"
 	"byte-board/internal/handler"
 	"byte-board/internal/middleware"
+	"byte-board/internal/service"
 	"net/http"
 	"os"
 	"time"
@@ -41,11 +43,27 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize handlers
-	handler := handler.New(db, cfg)
+	// Initialize JWT token provider
+	jwtConfig := auth.JWTConfig{
+		SecretKey:       cfg.JWTSecret,
+		ExpirationHours: cfg.JWTExpirationHours,
+	}
+	tokenProvider := auth.NewTokenProvider(jwtConfig)
+	log.Info().Msg("JWT token provider initialized")
+
+	// Initialize auth service
+	authService := service.NewAuthService(db, tokenProvider)
+	log.Info().Msg("Auth service initialized")
+
+	// Initialize auth middleware
+	authMiddleware := middleware.NewAuthMiddleware(tokenProvider)
+	log.Info().Msg("Auth middleware initialized")
+
+	// Initialize handlers with auth service
+	handler := handler.New(db, cfg, authService)
 
 	// Set up router with middlewear
-	router := setupRouter(handler)
+	router := setupRouter(handler, authMiddleware)
 
 	// Initialize CORS middleware with configuration
 	corsConfig := middleware.CORSConfig{
@@ -74,46 +92,46 @@ func main() {
 }
 
 // Setup router configures all of the API routes
-func setupRouter(h *handler.Handler) *mux.Router {
+func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) *mux.Router {
 	router := mux.NewRouter()
 
-	// API routes
+	// Set up API routes
 	api := router.PathPrefix("/api").Subrouter()
 
-	// #region Comments
+	// Set up protected routes (JWT Required)
+	protected := api.PathPrefix("").Subrouter()
+	protected.Use(authMiddleware.JWTAuth)
 
-	// GET
+	// Set up admin routes
+	admin := api.PathPrefix("/admin").Subrouter()
+	admin.Use(authMiddleware.JWTAuth)
+	admin.Use(middleware.RequireRole("admin"))
+
+	// Login/Register endpoints
+	api.HandleFunc("/register", h.Register).Methods("POST")
+	api.HandleFunc("/login", h.Login).Methods("POST")
+
+	// Comment endpoints
 	api.HandleFunc("/comments", h.GetAllComments).Methods("GET")
 	api.HandleFunc("/post/{postId}/comments", h.GetCommentsOnPost).Methods("GET")
 	api.HandleFunc("/comments/{commentId}", h.GetCommentById).Methods("GET")
 
-	// #endregion
-
-	// #region Posts
-
-	// GET
+	// Post endpoints
 	api.HandleFunc("/posts", h.GetAllPosts).Methods("GET")
 	api.HandleFunc("/posts/{postId}", h.GetPostById).Methods("GET")
 	api.HandleFunc("/posts/user/{userId}", h.GetPostsByUserId).Methods("GET")
 
-	// #endregion
-
-	// #region Profiles
-
-	// GET
+	// Profile endpoints
 	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
 	api.HandleFunc("/profiles/{userId}", h.GetProfileByUserId).Methods("GET")
 
-	// #endregion
+	// User endpoints
+	protected.HandleFunc("/auth/me", h.GetCurrentUser).Methods("GET")
 
-	// #region Users
-
-	// GET
-	api.HandleFunc("/users", h.GetAllUsers).Methods("GET")
-	api.HandleFunc("/users/{userId}", h.GetUserById).Methods("GET")
-	api.HandleFunc("/users/username/{username}", h.GetUserByUsername).Methods("GET")
-
-	// #endregion
+	// User management (Admin only)
+	admin.HandleFunc("/users", h.GetAllUsers).Methods("GET")
+	admin.HandleFunc("/users/{userId}", h.GetUserById).Methods("GET")
+	admin.HandleFunc("/users/username/{username}", h.GetUserByUsername).Methods("GET")
 
 	return router
 }
