@@ -2,11 +2,14 @@ package handler
 
 import (
 	"byte-board/internal/appconfig"
+	"byte-board/internal/middleware"
+	"byte-board/internal/model"
 	"byte-board/internal/repository"
 	"byte-board/internal/service"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -195,6 +198,64 @@ func (h *Handler) GetPostsByUserId(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Int("Count", len(posts)).Msg("Successfully retrieved posts from user ID")
 	writeJSONResponse(w, http.StatusOK, posts)
+}
+
+// POST /api/protected/posts - Create new post
+func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("POST /api/posts - Creating new post")
+
+	// Get authenticated user from JWT mware context
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	// Get user from db
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get user")
+		writeErrorResponse(w, http.StatusInternalServerError, "failed to get user info")
+		return
+	}
+
+	// Parse body request
+	var req struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Warn().Err(err).Msg("Invalid request body")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate input
+	if req.Title == "" || req.Content == "" {
+		log.Warn().Msg("Missing required fields")
+		writeErrorResponse(w, http.StatusBadRequest, "Title and content are required")
+		return
+	}
+
+	// Create post object
+	post := &model.Post{
+		UserId:     user.ID,
+		Title:      req.Title,
+		Content:    req.Content,
+		Author:     user.Username,
+		DatePosted: time.Now(),
+	}
+
+	// Call db to create post
+	if err := h.db.CreatePost(post); err != nil {
+		log.Error().Err(err).Msg("failed to create post")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to create post")
+		return
+	}
+
+	log.Info().Str("title", post.Title).Msg("Post created successfully")
+	writeJSONResponse(w, http.StatusCreated, post)
 }
 
 // #endregion
