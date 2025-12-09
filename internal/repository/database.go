@@ -221,6 +221,33 @@ func (db *DB) UpdatePost(post *model.Post) error {
 	return nil
 }
 
+// DELETE api/posts/{postId} - Delete a post
+func (db *DB) DeletePost(postId int) error {
+	log.Info().Int("ID", postId).Msg("Deleting post from the database")
+
+	query := "DELETE FROM posts WHERE post_id = $1"
+	result, err := db.Exec(query, postId)
+	if err != nil {
+		log.Error().Err(err).Int("PostID", postId).Msg("Failed to execute post deletion query")
+		return fmt.Errorf("failed to delete post: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	log.Info().Int("PostID", postId).Int64("rows affected", rowsAffected).Msg("Post deletion query executed")
+
+	if rowsAffected == 0 {
+		log.Warn().Int("PostID", postId).Msg("No rows affected - post not found")
+		return fmt.Errorf("post not found")
+	}
+
+	log.Info().Int("PostID", postId).Msg("Successfully deleted post from the database")
+	return nil
+}
+
 // #endregion
 
 // #region Profiles
