@@ -344,6 +344,69 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, existingPost)
 }
 
+// DELETE /api/posts/{postId} - Handler to delete a post
+func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("DELETE /api/posts/{postId} - Deleting post")
+
+	// Get authenticated user from context
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in the context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	// Get user from the db
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user")
+		return
+	}
+
+	// Get the string post ID
+	vars := mux.Vars(r)
+	idStr := vars["postId"]
+
+	// Conver string postID to an int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("PostID", idStr).Msg("Invalid post ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	// Get existing post from the db
+	existingPost, err := h.db.GetPostById(id)
+	if err != nil {
+		if err.Error() == "post not found" {
+			log.Warn().Int("PostID", id).Msg("post not found")
+			writeErrorResponse(w, http.StatusNotFound, "Post not found")
+			return
+		}
+		log.Error().Err(err).Msg("failed to get post")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get post")
+		return
+	}
+
+	// Verify the user owns the post
+	if existingPost.UserId != user.ID {
+		log.Warn().Int("PostID", id).Int("UserID", user.ID).Msg("User does not own this post")
+		writeErrorResponse(w, http.StatusForbidden, "You can only delete your own posts")
+		return
+	}
+
+	// Call the database to delete the post
+	if err := h.db.DeletePost(id); err != nil {
+		log.Error().Err(err).Msg("failed to delete post")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to delete post")
+		return
+	}
+
+	log.Info().Int("PostID", id).Msg("Post deleted successfully")
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Post deleted successfully"})
+}
+
 // #endregion
 
 // #region Profile handlers
