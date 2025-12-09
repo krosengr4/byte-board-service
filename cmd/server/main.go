@@ -125,6 +125,8 @@ func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) 
 	protected.HandleFunc("/posts", h.CreatePost).Methods("POST")
 	// PUT
 	protected.HandleFunc("/posts/{postId}", h.UpdatePost).Methods("PUT")
+	// DELETE
+	protected.HandleFunc("posts/{postId}", h.DeletePost).Methods("DELETE")
 
 	// Profile endpoints
 	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
