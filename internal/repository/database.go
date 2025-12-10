@@ -106,6 +106,25 @@ func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 	return commentList, nil
 }
 
+// POST /api/comments/{postId} - Create comment on a post
+func (db *DB) CreateComment(comment *model.Comment, postId int) error {
+	log.Info().Int("PostID", postId).Msg("Creating comment on post")
+
+	query := `
+		INSERT INTO comments (user_id, post_id, content, author, date_posted)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING comment_id
+			`
+
+	err := db.QueryRow(query, comment.UserId, comment.PostId, comment.Content, comment.Author, comment.DatePosted).
+		Scan(&comment.CommentId)
+	if err != nil {
+		return fmt.Errorf("failed to create comment: %w", err)
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Posts
