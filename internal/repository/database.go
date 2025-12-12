@@ -132,7 +132,7 @@ func (db *DB) UpdateComment(comment *model.Comment) error {
 	query := `
 		UPDATE comments 
 		SET content = $2, 
-		author = $3, 
+		author = $3 
 		WHERE comment_id = $1
 	`
 
