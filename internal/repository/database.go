@@ -125,6 +125,33 @@ func (db *DB) CreateComment(comment *model.Comment, postId int) error {
 	return nil
 }
 
+// PUT /api/comments/{commentId} - Update a comment
+func (db *DB) UpdateComment(comment *model.Comment) error {
+	log.Info().Int("ID", comment.CommentId).Msg("Updating comment in the database")
+
+	query := `
+		UPDATE comments 
+		SET content = $2, 
+		author = $3, 
+		WHERE comment_id = $1
+	`
+
+	result, err := db.Exec(query, comment.CommentId, comment.Content, comment.Author)
+	if err != nil {
+		return fmt.Errorf("failed to update comment: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("comment not found")
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Posts
