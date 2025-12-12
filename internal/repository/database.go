@@ -152,6 +152,27 @@ func (db *DB) UpdateComment(comment *model.Comment) error {
 	return nil
 }
 
+// DELETE /api/comments/{commentId} - Delete a comment
+func (db *DB) DeleteComment(id int) error {
+	log.Info().Int("ID", id).Msg("Deleting comment from the database")
+
+	query := "DELETE FROM comments WHERE comment_id = $1"
+
+	result, err := db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete comment: %w", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("comment not found")
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Posts
