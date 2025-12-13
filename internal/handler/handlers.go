@@ -296,6 +296,67 @@ func (h *Handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, existingComment)
 }
 
+// DELETE /api/comments/{commentId} - Delete a comment
+func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("DELETE /api/comments/{commentId} - Deleting comment")
+
+	// Verify user authentification
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized user")
+		return
+	}
+
+	// Get user from database
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user info")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user info")
+		return
+	}
+
+	// Get string commentID from URL
+	vars := mux.Vars(r)
+	idStr := vars["commentId"]
+
+	// Convert string ID to int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("Comment ID", idStr).Msg("Invalid comment ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid comment ID format")
+		return
+	}
+
+	// Get existing comment from db
+	existingComment, err := h.db.GetCommentById(id)
+	if err != nil {
+		if err.Error() == "comment not found" {
+			log.Warn().Int("Comment ID", id).Msg("Comment not found")
+			writeErrorResponse(w, http.StatusNotFound, "Comment not found")
+			return
+		}
+	}
+
+	// Verify comment belongs to user
+	if existingComment.UserId != user.ID {
+		log.Warn().Int("Comment ID", id).Int("User ID", user.ID).Msg("User does not own this comment")
+		writeErrorResponse(w, http.StatusForbidden, "You can only delete your comments")
+		return
+	}
+
+	// Call db to delete the comment
+	if err := h.db.DeleteComment(existingComment.CommentId); err != nil {
+		log.Error().Err(err).Msg("Failed to delete comment")
+		writeErrorResponse(w, http.StatusInternalServerError, "You can only delete your own comments")
+		return
+	}
+
+	// Success
+	log.Info().Int("Comment ID", id).Msg("Successfully deleted comment")
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "comment successfully deleted"})
+}
+
 // #endregion
 
 // #region Post handlers
