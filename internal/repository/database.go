@@ -106,6 +106,73 @@ func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 	return commentList, nil
 }
 
+// POST /api/comments/{postId} - Create comment on a post
+func (db *DB) CreateComment(comment *model.Comment, postId int) error {
+	log.Info().Int("PostID", postId).Msg("Creating comment on post")
+
+	query := `
+		INSERT INTO comments (user_id, post_id, content, author, date_posted)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING comment_id
+			`
+
+	err := db.QueryRow(query, comment.UserId, comment.PostId, comment.Content, comment.Author, comment.DatePosted).
+		Scan(&comment.CommentId)
+	if err != nil {
+		return fmt.Errorf("failed to create comment: %w", err)
+	}
+
+	return nil
+}
+
+// PUT /api/comments/{commentId} - Update a comment
+func (db *DB) UpdateComment(comment *model.Comment) error {
+	log.Info().Int("ID", comment.CommentId).Msg("Updating comment in the database")
+
+	query := `
+		UPDATE comments 
+		SET content = $2, 
+		author = $3 
+		WHERE comment_id = $1
+	`
+
+	result, err := db.Exec(query, comment.CommentId, comment.Content, comment.Author)
+	if err != nil {
+		return fmt.Errorf("failed to update comment: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("comment not found")
+	}
+
+	return nil
+}
+
+// DELETE /api/comments/{commentId} - Delete a comment
+func (db *DB) DeleteComment(id int) error {
+	log.Info().Int("ID", id).Msg("Deleting comment from the database")
+
+	query := "DELETE FROM comments WHERE comment_id = $1"
+
+	result, err := db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete comment: %w", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("comment not found")
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Posts
