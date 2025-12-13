@@ -212,6 +212,90 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusCreated, comment)
 }
 
+// PUT /api/comments/{commentId} - Update comment
+func (h *Handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("PUT /api/comments/{commentId} - Updating comment")
+
+	// Verify authenticated user
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	// Get user from db
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user info")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user info")
+		return
+	}
+
+	// Get comment ID string from URL
+	vars := mux.Vars(r)
+	idStr := vars["commentId"]
+
+	// Convert comment ID string to int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("Comment ID", idStr).Msg("Invalid Comment ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid Comment ID")
+		return
+	}
+
+	// Get existing comment from db
+	existingComment, err := h.db.GetCommentById(id)
+	if err != nil {
+		if err.Error() == "comment not found" {
+			log.Warn().Int("Comment ID", id).Msg("Comment not found")
+			writeErrorResponse(w, http.StatusNotFound, "Comment not found")
+			return
+		}
+		log.Error().Err(err).Msg("Failed to get comment")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get comment")
+		return
+	}
+
+	// Verify user owns the comment
+	if existingComment.UserId != user.ID {
+		log.Warn().Int("User ID", user.ID).Int("Comment ID", existingComment.CommentId).Msg("User does not own this comment")
+		writeErrorResponse(w, http.StatusForbidden, "You can only update comments you own")
+		return
+	}
+
+	// Parse the request body
+	var req struct {
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error().Err(err).Msg("Invalid request body")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate input
+	if req.Content == "" {
+		log.Warn().Msg("Missing required field: content")
+		writeErrorResponse(w, http.StatusBadRequest, "Content is required")
+		return
+	}
+
+	// Update comment object with new data
+	existingComment.Content = req.Content
+
+	// Call the db to update the comment
+	if err := h.db.UpdateComment(existingComment); err != nil {
+		log.Error().Err(err).Msg("Failed to update comment")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to update comment")
+		return
+	}
+
+	// Success
+	log.Info().Int("Comment ID", id).Msg("Successfully updated comment")
+	writeJSONResponse(w, http.StatusOK, existingComment)
+}
+
 // #endregion
 
 // #region Post handlers
