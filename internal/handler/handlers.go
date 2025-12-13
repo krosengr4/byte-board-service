@@ -129,6 +129,89 @@ func (h *Handler) GetCommentsOnPost(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// POST /api/post/{postId}/comments - Creating comment on a post
+func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("Creating comment on a post")
+
+	// Get the post ID as a string from URL params
+	vars := mux.Vars(r)
+	postIdStr := vars["postId"]
+
+	// Convert post ID string into int
+	postId, err := strconv.Atoi(postIdStr)
+	if err != nil {
+		log.Warn().Str("Post ID", postIdStr).Msg("Invalid Post ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	// Get username
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in that context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized user")
+		return
+	}
+
+	// Get user from db
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get user")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user info")
+		return
+	}
+
+	// Verify post exists
+	_, err = h.db.GetPostById(postId)
+	if err != nil {
+		if err.Error() == "post not found" {
+			log.Warn().Int("Post ID", postId).Msg("Post not found")
+			writeErrorResponse(w, http.StatusNotFound, "Post not found")
+			return
+		}
+		log.Error().Err(err).Msg("Failed to verify post")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to verify post existence")
+		return
+	}
+
+	// Parse the request body
+	var req struct {
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Warn().Err(err).Msg("Invalid request body")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid req body")
+		return
+	}
+
+	// Validate input
+	if req.Content == "" {
+		log.Warn().Msg("Missing required content field")
+		writeErrorResponse(w, http.StatusBadRequest, "Content is required")
+		return
+	}
+
+	// Create comment object
+	comment := model.Comment{
+		UserId:     user.ID,
+		PostId:     postId,
+		Content:    req.Content,
+		Author:     user.Username,
+		DatePosted: time.Now(),
+	}
+
+	// Call database to create comment
+	if err := h.db.CreateComment(&comment, postId); err != nil {
+		log.Error().Err(err).Msg("Failed to create comment")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to create comment")
+		return
+	}
+
+	// Success
+	log.Info().Int("Comment ID", comment.CommentId).Msg("Successfully added comment to post")
+	writeJSONResponse(w, http.StatusCreated, comment)
+}
+
 // #endregion
 
 // #region Post handlers
