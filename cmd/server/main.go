@@ -138,6 +138,8 @@ func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) 
 	// Profile endpoints
 	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
 	api.HandleFunc("/profiles/{userId}", h.GetProfileByUserId).Methods("GET")
+	// PUT
+	protected.HandleFunc("/profiles/{userId}", h.UpdateProfile).Methods("PUT")
 
 	// User endpoints
 	protected.HandleFunc("/auth/me", h.GetCurrentUser).Methods("GET")

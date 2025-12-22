@@ -381,6 +381,43 @@ func (db *DB) CreateProfile(profile *model.Profile) (*model.Profile, error) {
 	return profile, nil
 }
 
+// Update a profile
+func (db *DB) UpdateProfile(profile *model.Profile) error {
+	log.Info().Int("User ID:", profile.UserId).Msg("Updating user profile in the db")
+
+	query := `
+		UPDATE profiles 
+		SET first_name = $2,
+		last_name = $3,
+		email = $4,
+		github_link = $5,
+		city = $6,
+		state = $7
+		WHERE user_id = $1
+	`
+
+	// Execute query
+	result, err := db.Exec(query, profile.UserId, profile.FirstName, profile.LastName, profile.Email, profile.GithubLink, profile.City, profile.State)
+	if err != nil {
+		return fmt.Errorf("failed to update users profile: %w", err)
+	}
+
+	// Get rows affected
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	log.Info().Int("User ID", profile.UserId).Int64("Rows affected", rows).Msg("Profile update query was executed")
+
+	// Verify profile exists
+	if rows == 0 {
+		return fmt.Errorf("profile not found")
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Users
