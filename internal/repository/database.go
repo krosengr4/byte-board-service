@@ -418,6 +418,27 @@ func (db *DB) UpdateProfile(profile *model.Profile) error {
 	return nil
 }
 
+// Delete a profile
+func (db *DB) DeleteProfile(userId int) error {
+	log.Info().Int("User ID", userId).Msg("Deleting user's profile")
+
+	query := "DELETE FROM profiles WHERE user_id = $1"
+	result, err := db.Exec(query, userId)
+	if err != nil {
+		return fmt.Errorf("Failed to delete profile: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("profile not found")
+	}
+
+	return nil
+}
+
 // #endregion
 
 // #region Users
