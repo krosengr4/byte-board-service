@@ -53,7 +53,7 @@ func writeErrorResponse(w http.ResponseWriter, status int, message string) {
 
 // #region Comment handlers
 
-// Handler to get all comments
+// GET /api/comments - Handler to get all comments
 func (h *Handler) GetAllComments(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /comments - Getting all comments")
 
@@ -68,7 +68,7 @@ func (h *Handler) GetAllComments(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, comments)
 }
 
-// Handler to get a comment by comment ID
+// GET /api/comments/{commentId} - Handler to get a comment by comment ID
 func (h *Handler) GetCommentById(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /comments/{CommentID} - Getting comment by its ID")
 
@@ -102,7 +102,7 @@ func (h *Handler) GetCommentById(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, comment)
 }
 
-// Handler to get all of the comments on a post
+// GET /api/post/{postId}/comments - Handler to get all of the comments on a post
 func (h *Handler) GetCommentsOnPost(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /post/{postId}/comments - Getting comments on post")
 
@@ -361,7 +361,7 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 // #region Post handlers
 
-// Handler to get all posts
+// GET /api/posts - Handler to get all posts
 func (h *Handler) GetAllPosts(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /posts - Getting all posts")
 
@@ -376,7 +376,7 @@ func (h *Handler) GetAllPosts(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, posts)
 }
 
-// Handler to get post by ID
+// GET /api/posts/{postId} - Handler to get post by ID
 func (h *Handler) GetPostById(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /posts/{postId} - Getting a post by post ID")
 
@@ -402,7 +402,7 @@ func (h *Handler) GetPostById(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, post)
 }
 
-// Handler to get all posts by UserID
+// GET /api/posts/user/{userId} - Handler to get all posts by UserID
 func (h *Handler) GetPostsByUserId(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /posts/user/{userId} - Getting all posts by user ID")
 
@@ -567,7 +567,7 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Finally
+	// Success
 	log.Info().Int("postId", id).Str("title", existingPost.Title).Msg("Post updated successfully")
 	writeJSONResponse(w, http.StatusOK, existingPost)
 }
@@ -639,7 +639,7 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 // #region Profile handlers
 
-// Handler to get all profiles
+// GET /api/profiles - Handler to get all profiles
 func (h *Handler) GetAllProfiles(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /profiles - Getting all profiles")
 
@@ -654,7 +654,7 @@ func (h *Handler) GetAllProfiles(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, profiles)
 }
 
-// Handler to get profile by User ID
+// GET /api/profiles/{userId} - Handler to get profile by User ID
 func (h *Handler) GetProfileByUserId(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /profiles/{userId} - Getting profile by user ID")
 
@@ -686,7 +686,7 @@ func (h *Handler) GetProfileByUserId(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, profile)
 }
 
-// PUT /api/profiles/{userId}
+// PUT /api/profiles/{userId} - Handler to update profile
 func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("PUT /api/profiles/{userId} - Updating profile")
 
@@ -777,7 +777,7 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 // #region Handler for Users
 
-// Handler to get all Users
+// GET /api/admin/users Handler to get all Users with admin permissions
 func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /users - Getting all users")
 
@@ -792,7 +792,7 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, users)
 }
 
-// Handler to get User by User ID
+// GET /api/admin/users/{userId} - Handler to get User by User ID with admin permissions
 func (h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /users/{userId} - Getting user by user ID")
 
@@ -824,7 +824,7 @@ func (h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, user)
 }
 
-// Handler to get User by Username
+// GET /api/users/username/{username} - Handler to get User by Username with admin permissions
 func (h *Handler) GetUserByUsername(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msg("GET /users/username/{username} - Getting user by username")
 

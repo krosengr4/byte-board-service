@@ -39,7 +39,7 @@ func New(cfg *appconfig.Config) (*DB, error) {
 
 // #region Comments
 
-// GET api/comments - Get all comments in the db
+// Get all comments in the db
 func (db *DB) GetAllComments() ([]model.Comment, error) {
 	query := "SELECT * FROM comments"
 
@@ -63,7 +63,7 @@ func (db *DB) GetAllComments() ([]model.Comment, error) {
 	return commentsList, nil
 }
 
-// GET api/comment/{commentId} - Get comment by ID
+// Get comment by ID
 func (db *DB) GetCommentById(commentId int) (*model.Comment, error) {
 	query := "SELECT * FROM comments WHERE comment_id = $1"
 
@@ -79,7 +79,7 @@ func (db *DB) GetCommentById(commentId int) (*model.Comment, error) {
 	return &comment, nil
 }
 
-// GET api/post/{postId}/comments - Get all comments on a post
+// Get all comments on a post
 func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 	query := "SELECT * FROM comments WHERE post_id = $1"
 
@@ -106,7 +106,7 @@ func (db *DB) GetCommentsByPost(postId int) ([]model.Comment, error) {
 	return commentList, nil
 }
 
-// POST /api/comments/{postId} - Create comment on a post
+// Create comment on a post
 func (db *DB) CreateComment(comment *model.Comment, postId int) error {
 	log.Info().Int("PostID", postId).Msg("Creating comment on post")
 
@@ -125,7 +125,7 @@ func (db *DB) CreateComment(comment *model.Comment, postId int) error {
 	return nil
 }
 
-// PUT /api/comments/{commentId} - Update a comment
+// Update a comment
 func (db *DB) UpdateComment(comment *model.Comment) error {
 	log.Info().Int("ID", comment.CommentId).Msg("Updating comment in the database")
 
@@ -152,7 +152,7 @@ func (db *DB) UpdateComment(comment *model.Comment) error {
 	return nil
 }
 
-// DELETE /api/comments/{commentId} - Delete a comment
+// Delete a comment
 func (db *DB) DeleteComment(id int) error {
 	log.Info().Int("ID", id).Msg("Deleting comment from the database")
 
@@ -177,7 +177,7 @@ func (db *DB) DeleteComment(id int) error {
 
 // #region Posts
 
-// GET api/posts - Get all posts in the DB
+// Get all posts in the DB
 func (db *DB) GetAllPosts() ([]model.Post, error) {
 	query := "SELECT * FROM posts"
 
@@ -201,7 +201,7 @@ func (db *DB) GetAllPosts() ([]model.Post, error) {
 	return postList, nil
 }
 
-// GET api/posts/{postId} - Get post by post ID
+// Get post by post ID
 func (db *DB) GetPostById(postId int) (*model.Post, error) {
 	query := "SELECT * FROM posts WHERE post_id = $1"
 
@@ -217,7 +217,7 @@ func (db *DB) GetPostById(postId int) (*model.Post, error) {
 	return &post, nil
 }
 
-// GET api/posts/user/{userId} - Get all posts made by a user
+// Get all posts made by a user
 func (db *DB) GetPostsByUserId(userId int) ([]model.Post, error) {
 	query := "SELECT * FROM posts WHERE user_id = $1"
 
@@ -319,7 +319,7 @@ func (db *DB) DeletePost(postId int) error {
 
 // #region Profiles
 
-// GET api/profiles - Get all profiles
+// Get all profiles
 func (db *DB) GetAllProfiles() ([]model.Profile, error) {
 	query := "SELECT * FROM profiles"
 
@@ -342,7 +342,7 @@ func (db *DB) GetAllProfiles() ([]model.Profile, error) {
 	return profileList, nil
 }
 
-// GET api/profiles/{userId} - Get profile by User ID
+// Get profile by User ID
 func (db *DB) GetProfileByUserId(userId int) (*model.Profile, error) {
 	query := "SELECT * FROM profiles WHERE user_id = $1"
 
@@ -443,7 +443,7 @@ func (db *DB) DeleteProfile(userId int) error {
 
 // #region Users
 
-// GET api/users - Get all users
+// Get all users
 func (db *DB) GetAllUsers() ([]model.User, error) {
 	query := "SELECT * FROM users"
 
@@ -466,7 +466,7 @@ func (db *DB) GetAllUsers() ([]model.User, error) {
 	return userList, nil
 }
 
-// GET api/users/{userId} - Get user by user ID
+// Get user by user ID
 func (db *DB) GetUserByID(userId int) (*model.User, error) {
 	query := "SELECT * FROM users WHERE user_id = $1"
 
