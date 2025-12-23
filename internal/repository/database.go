@@ -455,7 +455,7 @@ func (db *DB) GetAllUsers() ([]model.User, error) {
 	var userList []model.User
 	for rows.Next() {
 		var user model.User
-		err := rows.Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
+		err := rows.Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role, &user.FirstName, &user.LastName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan users")
 		}
@@ -471,7 +471,7 @@ func (db *DB) GetUserByID(userId int) (*model.User, error) {
 	query := "SELECT * FROM users WHERE user_id = $1"
 
 	var user model.User
-	err := db.QueryRow(query, userId).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
+	err := db.QueryRow(query, userId).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role, &user.FirstName, &user.LastName)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -487,7 +487,7 @@ func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 	query := "SELECT * FROM users WHERE username = $1"
 
 	var user model.User
-	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role)
+	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.Role, &user.FirstName, &user.LastName)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("username not found")
 	}
@@ -501,12 +501,12 @@ func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 // Create new user
 func (db *DB) CreateUser(user *model.User) error {
 	query := `
-		INSERT INTO users (username, hashed_password, role)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (username, hashed_password, role, first_name, last_name)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING user_id
 	`
 
-	err := db.QueryRow(query, user.Username, user.HashedPassword, user.Role).Scan(&user.ID)
+	err := db.QueryRow(query, user.Username, user.HashedPassword, user.Role, user.FirstName, user.LastName).Scan(&user.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
@@ -520,11 +520,13 @@ func (db *DB) UpdateUser(user *model.User) error {
 		UPDATE users
 		SET username = $1,
 		hashed_password = $2,
-		role = $3
-		WHERE user_id = $4
+		role = $3,
+		first_name = $4,
+		last_name = $5
+		WHERE user_id = $6
 	`
 
-	result, err := db.Exec(query, user.Username, user.HashedPassword, user.Role, user.ID)
+	result, err := db.Exec(query, user.Username, user.HashedPassword, user.Role, user.FirstName, user.LastName, user.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update user: %w", err)
 	}
