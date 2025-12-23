@@ -36,4 +36,6 @@ type User struct {
 	Username       string `json:"username" db:"username"`
 	HashedPassword string `json:"-" db:"hashed_password"`
 	Role           string `json:"role" db:"role"`
+	FirstName string `json:"first_name" db:"first_name"`
+	LastName string `json:"last_name" db:"last_name"`
 }
