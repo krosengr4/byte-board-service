@@ -338,8 +338,8 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Verify comment belongs to user
-	if existingComment.UserId != user.ID {
+	// Verify comment belongs to user or user deleting is admin
+	if existingComment.UserId != user.ID && user.Role != "admin" {
 		log.Warn().Int("Comment ID", id).Int("User ID", user.ID).Msg("User does not own this comment")
 		writeErrorResponse(w, http.StatusForbidden, "You can only delete your comments")
 		return
@@ -617,8 +617,8 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify the user owns the post
-	if existingPost.UserId != user.ID {
+	// Verify the user owns the post or user deleting post is admin
+	if existingPost.UserId != user.ID && user.Role != "admin" {
 		log.Warn().Int("PostID", id).Int("UserID", user.ID).Msg("User does not own this post")
 		writeErrorResponse(w, http.StatusForbidden, "You can only delete your own posts")
 		return
