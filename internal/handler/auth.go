@@ -52,9 +52,11 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"message": "User successfully registered",
 		"user": model.UserSummary{
-			UserID:   user.ID,
-			Username: user.Username,
-			Role:     user.Role,
+			UserID:    user.ID,
+			Username:  user.Username,
+			Role:      user.Role,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
 		},
 		"profile": profile,
 	}
@@ -107,9 +109,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	response := model.AuthResponse{
 		Token: token,
 		User: model.UserSummary{
-			UserID:   user.ID,
-			Username: user.Username,
-			Role:     user.Role,
+			UserID:    user.ID,
+			Username:  user.Username,
+			Role:      user.Role,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
 		},
 	}
 
@@ -147,9 +151,11 @@ func (h *Handler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	// Create response
 	response := map[string]interface{}{
 		"user": model.UserSummary{
-			UserID:   user.ID,
-			Username: user.Username,
-			Role:     user.Role,
+			UserID:    user.ID,
+			Username:  user.Username,
+			Role:      user.Role,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
 		},
 		"profile": profile,
 	}
