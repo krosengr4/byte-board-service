@@ -71,6 +71,8 @@ func (s *AuthService) Register(username, password, firstName, lastName string) (
 		Username:       username,
 		HashedPassword: hashedPassword,
 		Role:           "user",
+		FirstName:      firstName,
+		LastName:       lastName,
 	}
 
 	// Save to database
