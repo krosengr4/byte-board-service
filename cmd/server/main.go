@@ -114,10 +114,10 @@ func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) 
 	// Comment endpoints
 	// GET
 	api.HandleFunc("/comments", h.GetAllComments).Methods("GET")
-	api.HandleFunc("/post/{postId}/comments", h.GetCommentsOnPost).Methods("GET")
+	api.HandleFunc("/posts/{postId}/comments", h.GetCommentsOnPost).Methods("GET")
 	api.HandleFunc("/comments/{commentId}", h.GetCommentById).Methods("GET")
 	// POST
-	protected.HandleFunc("/post/{postId}/comments", h.CreateComment).Methods("POST")
+	protected.HandleFunc("/posts/{postId}/comments", h.CreateComment).Methods("POST")
 	// PUT
 	protected.HandleFunc("/comments/{commentId}", h.UpdateComment).Methods("PUT")
 	// DELETE
@@ -133,7 +133,7 @@ func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) 
 	// PUT
 	protected.HandleFunc("/posts/{postId}", h.UpdatePost).Methods("PUT")
 	// DELETE
-	protected.HandleFunc("posts/{postId}", h.DeletePost).Methods("DELETE")
+	protected.HandleFunc("/posts/{postId}", h.DeletePost).Methods("DELETE")
 
 	// Profile endpoints
 	api.HandleFunc("/profiles", h.GetAllProfiles).Methods("GET")
@@ -143,6 +143,8 @@ func setupRouter(h *handler.Handler, authMiddleware *middleware.AuthMiddleware) 
 
 	// User endpoints
 	protected.HandleFunc("/auth/me", h.GetCurrentUser).Methods("GET")
+	// DELETE
+	protected.HandleFunc("/users/{userId}", h.DeleteUser).Methods("DELETE")
 
 	// User management (Admin only)
 	admin.HandleFunc("/users", h.GetAllUsers).Methods("GET")
