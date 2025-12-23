@@ -740,8 +740,8 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request body
 	var req struct {
-		FirstName  string `json:"firstname"`
-		LastName   string `json:"lastname"`
+		FirstName  string `json:"first_name"`
+		LastName   string `json:"last_name"`
 		Email      string `json:"email"`
 		GithubLink string `json:"github_link"`
 		City       string `json:"city"`
@@ -846,6 +846,55 @@ func (h *Handler) GetUserByUsername(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Str("Username", username).Msg("Successfully retrieved user")
 	writeJSONResponse(w, http.StatusOK, user)
+}
+
+// DELETE /api/users/{userId} - Delete a user and their profile
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	// Get username from context
+	username := middleware.GetUsername(r)
+	if username == "" {
+		log.Warn().Msg("No username in the context")
+		writeErrorResponse(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	// Get user from the db
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get user information")
+		return
+	}
+
+	// Get the userID string from URL
+	vars := mux.Vars(r)
+	idStr := vars["userId"]
+
+	// Convert the ID to int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Warn().Str("User ID", idStr).Msg("Invalid User ID format")
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid user ID format")
+		return
+	}
+
+	// Verify user owns the account or is an admin
+	if user.ID != id && user.Role != "admin" {
+		log.Warn().Msg("User does not own this account")
+		writeErrorResponse(w, http.StatusForbidden, "You can only delete your account")
+		return
+	}
+
+	// Delete the user (cascades to profile, posts, comments)
+	if err := h.db.DeleteUser(id); err != nil {
+		log.Error().Err(err).Msg("Failed to delete user")
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to delete user")
+		return
+	}
+
+	// Success
+	log.Info().Int("User ID", id).Msg("User account deleted successfully")
+	writeJSONResponse(w, http.StatusOK, "User successfully deleted!")
 }
 
 // #endregion
