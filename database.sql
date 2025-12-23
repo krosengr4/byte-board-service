@@ -26,7 +26,9 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     hashed_password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL
+    role VARCHAR(50) NOT NULL,
+    first_name VARCHAR(50), -- ADD THIS
+    last_name VARCHAR(50) -- ADD THIS
 );
 
 CREATE TABLE profiles (
