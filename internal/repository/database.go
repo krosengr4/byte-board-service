@@ -179,7 +179,7 @@ func (db *DB) DeleteComment(id int) error {
 
 // Get all posts in the DB
 func (db *DB) GetAllPosts() ([]model.Post, error) {
-	query := "SELECT * FROM posts"
+	query := "SELECT * FROM posts ORDER BY date_posted DESC"
 
 	rows, err := db.Query(query)
 	if err != nil {
