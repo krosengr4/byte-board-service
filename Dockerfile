@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
@@ -31,6 +31,6 @@ COPY --from=builder /app/server .
 
 # Expose port
 EXPOSE 8080
- 
+
 # Run the server
 CMD ["./server"]
